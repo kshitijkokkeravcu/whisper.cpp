@@ -252,6 +252,14 @@ extern "C" {
                     const char * model_path,
                     const char * device,
                     const char * cache_dir);
+    WHISPER_API const float * whisper_log_mel_spectrogram(
+    struct whisper_context * ctx,
+    const float * samples,
+    int n_samples,
+    int n_threads,
+    int * out_n_len,
+    int * out_n_mel
+);
 
     // Frees all allocated memory
     WHISPER_API void whisper_free      (struct whisper_context * ctx);
