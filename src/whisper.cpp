@@ -218,6 +218,36 @@ static void whisper_load_backends() {
 }
 
 // TODO: move these functions to ggml-base with support for ggml-backend?
+WHISPER_API const float * whisper_log_mel_spectrogram(
+    struct whisper_context * ctx,
+    const float * samples,
+    int n_samples,
+    int n_threads,
+    int * out_n_len,
+    int * out_n_mel
+) {
+    if (!ctx || !samples || n_samples <= 0 || n_threads <= 0) {
+        if (out_n_len) *out_n_len = 0;
+        if (out_n_mel) *out_n_mel = 0;
+        return nullptr;
+    }
+
+    // 1. Compute the mel spectrogram into ctx->state->mel
+    const int ret = whisper_pcm_to_mel(ctx, samples, n_samples, n_threads);
+    if (ret != 0) {
+        // error in mel computation
+        if (out_n_len) *out_n_len = 0;
+        if (out_n_mel) *out_n_mel = 0;
+        return nullptr;
+    }
+
+    // 2. Extract dimensions and data pointer
+    const auto & S = ctx->state;
+    if (out_n_len) *out_n_len = S->n_len;
+    if (out_n_mel) *out_n_mel = S->n_mel;
+    return S->mel.data();
+}
+
 
 static ggml_tensor * whisper_set_f32(struct ggml_tensor * t, float v) {
     GGML_ASSERT(t->type == GGML_TYPE_F32);
