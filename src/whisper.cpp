@@ -3272,6 +3272,7 @@ static bool log_mel_spectrogram(
     return true;
 }
 
+// Place this after the full definition of `struct whisper_context` in whisper.cpp
 WHISPER_API const float * whisper_log_mel_spectrogram(
     struct whisper_context * ctx,
     const float * samples,
@@ -3286,7 +3287,7 @@ WHISPER_API const float * whisper_log_mel_spectrogram(
         return nullptr;
     }
 
-    // 1. Compute the mel spectrogram into ctx->state->mel
+    // 1. Compute the mel spectrogram into the context's state
     const int ret = whisper_pcm_to_mel(ctx, samples, n_samples, n_threads);
     if (ret != 0) {
         // error in mel computation
@@ -3295,12 +3296,13 @@ WHISPER_API const float * whisper_log_mel_spectrogram(
         return nullptr;
     }
 
-    // 2. Extract dimensions and data pointer
-    whisper_state & S = *ctx->state;
-    if (out_n_len) *out_n_len = S.n_len;
-    if (out_n_mel) *out_n_mel = S.n_mel;
-    return S->mel.data();
+    // 2. Extract dimensions and data pointer from the whisper_mel in the state
+    whisper_mel & M = ctx->state->mel;
+    if (out_n_len) *out_n_len = M.n_len;
+    if (out_n_mel) *out_n_mel = M.n_mel;
+    return M.data.data();
 }
+
 
 
 // split text into tokens
